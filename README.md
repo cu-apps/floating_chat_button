@@ -11,12 +11,11 @@ and the Flutter guide for
 [developing packages and plugins](https://flutter.dev/developing-packages). 
 -->
 
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+Show a draggable floating chat icon button and show messages on screens
 
 ## Features
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
+![Alt text](https://github.com/cu-apps/floating_chat_button/blob/master/example/example_gifs/floating_chat_button_example_1.gif?raw=true)
 
 ## Getting started
 
