@@ -20,7 +20,7 @@ A widget for displaying a chat icon (or custom widget) on top of a background wi
 It can show and hide messages or display a message that is passed in its constructor.
 
 ![Alt text](https://github.com/cu-apps/floating_chat_button/blob/master/example/example_gifs/floating_chat_button_example_1.gif?raw=true) ![Alt text](https://github.com/cu-apps/floating_chat_button/blob/master/example/example_gifs/floating_chat_button_example_2.gif?raw=true)
-![Alt text](https://github.com/cu-apps/floating_chat_button/blob/master/example/example_gifs/floating_chat_button_example_2.gif?raw=true)
+![Alt text](https://github.com/cu-apps/floating_chat_button/blob/master/example/example_gifs/floating_chat_button_example_3.gif?raw=true)
 ## Getting started
 
 Add it as the body of a scaffold (or other full screen view) and then supply the widget that should be shown under the chat widget as the `background` parameter.
