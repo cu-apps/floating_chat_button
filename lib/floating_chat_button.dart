@@ -5,8 +5,12 @@ import 'package:flutter/material.dart';
 import 'dart:math';
 
 class FloatingChatButton extends StatefulWidget {
+  /// The FloatingChatButton can be stacked on top of another view inside its
+  /// parent. This specifies the widget that it should be stacked on top of
+  final Widget? background;
+
   /// Must give the constraints that the chat widget is built under
-  final BoxConstraints constraints;
+  // final BoxConstraints constraints;
 
   /// Function called when the chat icon (not the message) is tapped
   final Function(BuildContext) onTap;
@@ -40,6 +44,12 @@ class FloatingChatButton extends StatefulWidget {
   /// Vertical spacing between the message and the chat icon
   final double messageVerticalSpacing;
 
+  /// The width of the border around the message. Defaults to no border
+  final double? messageBorderWidth;
+
+  /// Color of the border around the message
+  final Color? messageBorderColor;
+
   /// This fully replaces the default message widget
   final Widget? messageWidget;
 
@@ -70,7 +80,7 @@ class FloatingChatButton extends StatefulWidget {
   final double chatIconHorizontalOffset;
 
   FloatingChatButton(
-      {required this.constraints,
+      {this.background,
       required this.onTap,
       this.shouldPutWidgetInCircle = true,
       this.chatIconWidget,
@@ -88,14 +98,14 @@ class FloatingChatButton extends StatefulWidget {
       this.messageTextStyle,
       this.messageTextWidget,
       this.messageText,
+      this.messageBorderWidth,
+      this.messageBorderColor,
       this.showMessageParameters,
       this.chatIconVerticalOffset = 30,
       this.chatIconHorizontalOffset = 30,
       Key? key})
       : assert(chatIconWidget == null ||
-            (chatIconColor == null &&
-                chatIconBackgroundColor == null &&
-                chatIconSize == null &&
+            (chatIconSize == null &&
                 chatIconWidgetHeight == null &&
                 chatIconWidgetWidth == null)),
         assert(messageWidget == null ||
@@ -117,8 +127,12 @@ class FloatingChatButtonState extends State<FloatingChatButton> {
 
   @override
   void dispose() {
-    super.dispose();
     _timer?.cancel();
+    super.dispose();
+  }
+
+  void setStateIfMounted(f) {
+    if (mounted) setState(f);
   }
 
   void showMessage(
@@ -126,7 +140,7 @@ class FloatingChatButtonState extends State<FloatingChatButton> {
       Duration? duration,
       Widget? messageWidget,
       Widget? messageTextWidget}) {
-    setState(() {
+    setStateIfMounted(() {
       this.messageWidget = messageWidget;
       this.messageTextWidget = messageTextWidget;
       this.messageText = messageText;
@@ -138,7 +152,7 @@ class FloatingChatButtonState extends State<FloatingChatButton> {
   }
 
   void hideMessage() {
-    setState(() {
+    setStateIfMounted(() {
       isTimeToShowMessage = false;
     });
   }
@@ -146,13 +160,13 @@ class FloatingChatButtonState extends State<FloatingChatButton> {
   void _scheduleMessageShowing() {
     if (widget.showMessageParameters?.delayDuration != null) {
       _timer = Timer(widget.showMessageParameters!.delayDuration!, () {
-        setState(() {
+        setStateIfMounted(() {
           isTimeToShowMessage = true;
         });
         _scheduleMessageDisappearing();
       });
     } else {
-      setState(() {
+      setStateIfMounted(() {
         isTimeToShowMessage = true;
       });
       _scheduleMessageDisappearing();
@@ -169,7 +183,7 @@ class FloatingChatButtonState extends State<FloatingChatButton> {
     }
     if (durationUntilDisappers != null) {
       _timer = Timer(durationUntilDisappers, () {
-        setState(() {
+        setStateIfMounted(() {
           isTimeToShowMessage = false;
         });
       });
@@ -200,49 +214,54 @@ class FloatingChatButtonState extends State<FloatingChatButton> {
 
   @override
   Widget build(BuildContext context) {
-    var floatingChatIcon = FloatingChatIcon(
-      onTap: widget.onTap,
-      isTop: isTop,
-      isRight: isRight,
-      message: messageText,
-      shouldShowMessage: isTimeToShowMessage,
-      shouldPutWidgetInCircle: widget.shouldPutWidgetInCircle,
-      chatIconWidget: widget.chatIconWidget,
-      chatIconColor: widget.chatIconColor,
-      chatIconBackgroundColor: widget.chatIconBackgroundColor,
-      chatIconSize: widget.chatIconSize,
-      chatIconWidgetHeight: widget.chatIconWidgetHeight,
-      chatIconWidgetWidth: widget.chatIconWidgetWidth,
-      chatIconBorderColor: widget.chatIconBorderColor,
-      chatIconBorderWidth: widget.chatIconBorderWidth,
-      messageCrossFadeTime: widget.messageCrossFadeTime,
-      messageVerticalSpacing: widget.messageVerticalSpacing,
-      messageWidget: messageWidget,
-      messageBackgroundColor: widget.messageBackgroundColor,
-      messageTextStyle: widget.messageTextStyle,
-      messageTextWidget: messageTextWidget,
-      messageMaxWidth:
-          widget.constraints.maxWidth - (widget.chatIconHorizontalOffset * 2),
-    );
-    return Positioned(
-      bottom: (isTop) ? null : widget.chatIconVerticalOffset,
-      top: (isTop) ? widget.chatIconVerticalOffset : null,
-      right: (isRight) ? widget.chatIconHorizontalOffset : null,
-      left: (isRight) ? null : widget.chatIconHorizontalOffset,
-      child: Draggable(
-        child: floatingChatIcon,
-        feedback: floatingChatIcon,
-        childWhenDragging: Container(),
-        onDragEnd: (draggableDetails) {
-          setState(() {
-            isTop = (draggableDetails.offset.dy <
-                (MediaQuery.of(context).size.height) / 2);
-            isRight = (draggableDetails.offset.dx >
-                (MediaQuery.of(context).size.width) / 2);
-          });
-        },
-      ),
-    );
+    return LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+          var floatingChatIcon = FloatingChatIcon(
+            onTap: widget.onTap,
+            isTop: isTop,
+            isRight: isRight,
+            message: messageText,
+            shouldShowMessage: isTimeToShowMessage,
+            shouldPutWidgetInCircle: widget.shouldPutWidgetInCircle,
+            chatIconWidget: widget.chatIconWidget,
+            chatIconColor: widget.chatIconColor,
+            chatIconBackgroundColor: widget.chatIconBackgroundColor,
+            chatIconSize: widget.chatIconSize,
+            chatIconWidgetHeight: widget.chatIconWidgetHeight,
+            chatIconWidgetWidth: widget.chatIconWidgetWidth,
+            chatIconBorderColor: widget.chatIconBorderColor,
+            chatIconBorderWidth: widget.chatIconBorderWidth,
+            messageCrossFadeTime: widget.messageCrossFadeTime,
+            messageVerticalSpacing: widget.messageVerticalSpacing,
+            messageWidget: messageWidget,
+            messageBackgroundColor: widget.messageBackgroundColor,
+            messageTextStyle: widget.messageTextStyle,
+            messageTextWidget: messageTextWidget,
+            messageMaxWidth: constraints.maxWidth - (widget.chatIconHorizontalOffset * 2),
+          );
+      return Stack(children: [
+        if (widget.background != null) widget.background!,
+        Positioned(
+            bottom: (isTop) ? null : widget.chatIconVerticalOffset,
+            top: (isTop) ? widget.chatIconVerticalOffset : null,
+            right: (isRight) ? widget.chatIconHorizontalOffset : null,
+            left: (isRight) ? null : widget.chatIconHorizontalOffset,
+            child: Draggable(
+              child: floatingChatIcon,
+              feedback: floatingChatIcon,
+              childWhenDragging: Container(),
+              onDragEnd: (draggableDetails) {
+                setStateIfMounted(() {
+                  isTop = (draggableDetails.offset.dy <
+                      (MediaQuery.of(context).size.height) / 2);
+                  isRight = (draggableDetails.offset.dx >
+                      (MediaQuery.of(context).size.width) / 2);
+                });
+              },
+            ))
+      ]);
+    });
+    // return
   }
 }
 

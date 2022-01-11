@@ -22,6 +22,8 @@ class FloatingChatIcon extends StatelessWidget {
   final TextStyle? messageTextStyle;
   final Widget? messageTextWidget;
   final double messageMaxWidth;
+  final double? messageBorderWidth;
+  final Color? messageBorderColor;
 
   FloatingChatIcon({
     this.onTap,
@@ -44,11 +46,11 @@ class FloatingChatIcon extends StatelessWidget {
     this.messageBackgroundColor,
     this.messageTextStyle,
     this.messageTextWidget,
+    this.messageBorderWidth,
+    this.messageBorderColor,
     required this.messageMaxWidth,
   })  : assert(chatIconWidget == null ||
-            (chatIconColor == null &&
-                chatIconBackgroundColor == null &&
-                chatIconSize == null &&
+            (chatIconSize == null &&
                 chatIconWidgetHeight == null &&
                 chatIconWidgetWidth == null)),
         assert(messageWidget == null ||
@@ -77,7 +79,7 @@ class FloatingChatIcon extends StatelessWidget {
           shape: CircleBorder(
               side: BorderSide(
                   color: chatIconBorderColor, width: chatIconBorderWidth)),
-          color: Colors.white,
+          color: chatIconBackgroundColor ?? Colors.blue,
           child: InkWell(
               child: _getChatWidgetImage(),
               onTap: () {
@@ -125,9 +127,10 @@ class FloatingChatIcon extends StatelessWidget {
         decoration: BoxDecoration(
           color: messageBackgroundColor ?? Colors.blue,
           borderRadius: const BorderRadius.all(Radius.circular(10)),
+            border: (messageBorderWidth == null) ? null : Border.all(color: messageBorderColor ?? Colors.white, width: messageBorderWidth!)
         ),
         child: Padding(
-          padding: const EdgeInsets.all(8),
+          padding: const EdgeInsets.all(10),
           child: messageTextWidget ??
               Text(
                 message ?? "",
