@@ -131,16 +131,18 @@ class FloatingChatButtonState extends State<FloatingChatButton> {
     super.dispose();
   }
 
-  void setStateIfMounted(f) {
+  void _setStateIfMounted(f) {
     if (mounted) setState(f);
   }
 
+  /// Shows a message (or replaces the currently shown message) with the message given.
+  /// You should only provide one of messageText, messageWidget, and messageTextWidget
   void showMessage(
       {String? messageText,
       Duration? duration,
       Widget? messageWidget,
       Widget? messageTextWidget}) {
-    setStateIfMounted(() {
+    _setStateIfMounted(() {
       this.messageWidget = messageWidget;
       this.messageTextWidget = messageTextWidget;
       this.messageText = messageText;
@@ -151,8 +153,9 @@ class FloatingChatButtonState extends State<FloatingChatButton> {
     }
   }
 
+  /// Removes any messages which are currently showing
   void hideMessage() {
-    setStateIfMounted(() {
+    _setStateIfMounted(() {
       isTimeToShowMessage = false;
     });
   }
@@ -160,13 +163,13 @@ class FloatingChatButtonState extends State<FloatingChatButton> {
   void _scheduleMessageShowing() {
     if (widget.showMessageParameters?.delayDuration != null) {
       _timer = Timer(widget.showMessageParameters!.delayDuration!, () {
-        setStateIfMounted(() {
+        _setStateIfMounted(() {
           isTimeToShowMessage = true;
         });
         _scheduleMessageDisappearing();
       });
     } else {
-      setStateIfMounted(() {
+      _setStateIfMounted(() {
         isTimeToShowMessage = true;
       });
       _scheduleMessageDisappearing();
@@ -183,7 +186,7 @@ class FloatingChatButtonState extends State<FloatingChatButton> {
     }
     if (durationUntilDisappers != null) {
       _timer = Timer(durationUntilDisappers, () {
-        setStateIfMounted(() {
+        _setStateIfMounted(() {
           isTimeToShowMessage = false;
         });
       });
@@ -251,7 +254,7 @@ class FloatingChatButtonState extends State<FloatingChatButton> {
               feedback: floatingChatIcon,
               childWhenDragging: Container(),
               onDragEnd: (draggableDetails) {
-                setStateIfMounted(() {
+                _setStateIfMounted(() {
                   isTop = (draggableDetails.offset.dy <
                       (MediaQuery.of(context).size.height) / 2);
                   isRight = (draggableDetails.offset.dx >
