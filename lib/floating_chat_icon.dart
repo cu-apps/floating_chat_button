@@ -63,7 +63,7 @@ class FloatingChatIcon extends StatelessWidget {
   static const int defaultMessageCrossFadeTimeMilliseconds = 250;
   static const double messageBorderRadius = 10;
   static const double messageTextSize = 24;
-  static const double messageTextPadding = 0;
+  static const double messageTextPadding = 10;
 
   Widget _getChatWidgetImage() {
     if (chatIconWidget != null) {
