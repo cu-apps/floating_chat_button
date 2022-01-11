@@ -15,7 +15,7 @@ Show a draggable floating chat icon button and show messages on screens
 
 ## Features
 
-![Alt text](https://github.com/cu-apps/floating_chat_button/blob/master/example/example_gifs/floating_chat_button_example_1.gif?raw=true)
+![Alt text](https://github.com/cu-apps/floating_chat_button/blob/master/example/example_gifs/floating_chat_button_example_1.gif?raw=true) ![Alt text](https://github.com/cu-apps/floating_chat_button/blob/master/example/example_gifs/floating_chat_button_example_2.gif?raw=true)
 
 ## Getting started
 
