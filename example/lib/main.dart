@@ -13,6 +13,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Floating Chat Button Demo',
+      // debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
@@ -160,8 +161,17 @@ class _MyHomePageState extends State<MyHomePage> {
                 onTap: (_) {
                   _showBottomSheet(context);
                 },
+                chatIconWidget: const Padding(
+                  padding: EdgeInsets.all(14.0),
+                  child: Icon(
+                    Icons.perm_identity,
+                    color: Colors.green,
+                    size: 40,
+                  ),
+                ),
+                messageBackgroundColor: Colors.green,
                 chatIconBorderColor: Colors.green,
-                chatIconBackgroundColor: Colors.green,
+                chatIconBackgroundColor: Colors.white,
               )
             ],
           );
