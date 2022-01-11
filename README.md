@@ -15,24 +15,40 @@ Show a draggable floating chat icon button and show messages on screens
 
 ## Features
 
-![Alt text](https://github.com/cu-apps/floating_chat_button/blob/master/example/example_gifs/floating_chat_button_example_1.gif?raw=true) ![Alt text](https://github.com/cu-apps/floating_chat_button/blob/master/example/example_gifs/floating_chat_button_example_2.gif?raw=true)
+A widget for displaying a chat icon (or custom widget) on top of a background widget.
 
+It can show and hide messages or display a message that is passed in its constructor.
+
+![Alt text](https://github.com/cu-apps/floating_chat_button/blob/master/example/example_gifs/floating_chat_button_example_1.gif?raw=true) ![Alt text](https://github.com/cu-apps/floating_chat_button/blob/master/example/example_gifs/floating_chat_button_example_2.gif?raw=true)
+![Alt text](https://github.com/cu-apps/floating_chat_button/blob/master/example/example_gifs/floating_chat_button_example_2.gif?raw=true)
 ## Getting started
 
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
+Add it as the body of a scaffold (or other full screen view) and then supply the widget that should be shown under the chat widget as the `background` parameter.
+
+Alternately, use a stack view to position the chat widget and leave the `background` as null.
+
+The `FloatingChatIcon` will default to a blue circle with white chat icon and the `messageWidget` will default to a blue rounded rectangle with white text. All of these colours can be configured or custom widgets can be passed to `chatIconWidget`, `messageWidget` or `messageTextWidget`.
+
+The `ShowMessageParameters` allows you to show the message passed to the constructor after a given `delayDuration`, for the amount of time specified in `durationToShowMessage` and at a random frequency (eg "Only show this message 50% of the time that the widget is instantiated") with `showMessageFrequency`.
 
 ## Usage
 
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder. 
-
 ```dart
-const like = 'sample';
+@override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.title),
+      ),
+      body: FloatingChatButton(
+          background: BackgroundWidget(),
+          onTap: (_) {
+            _showBottomSheet(context);
+          },
+          messageText: "I like this package",
+      )
+    );
+  }
 ```
 
-## Additional information
 
-TODO: Tell users more about the package: where to find more information, how to 
-contribute to the package, how to file issues, what response they can expect 
-from the package authors, and more.
