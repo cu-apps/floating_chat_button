@@ -192,7 +192,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             messageText: "It's 50% of the time!",
             showMessageParameters: ShowMessageParameters(
-                delayDuration: const Duration(seconds: 3),
+                delayDuration: const Duration(seconds: 1),
                 showMessageFrequency: 0.5));
       default:
         return Container();

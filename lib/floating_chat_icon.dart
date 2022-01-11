@@ -57,17 +57,25 @@ class FloatingChatIcon extends StatelessWidget {
             (messageBackgroundColor == null && messageTextWidget == null)),
         assert(messageTextWidget == null || (messageTextStyle == null));
 
+  static const double defaultChatWidgetImageWidth = 70;
+  static const double defaultChatWidgetImageHeight = 70;
+  static const double defaultChatIconSize = 35;
+  static const int defaultMessageCrossFadeTimeMilliseconds = 250;
+  static const double messageBorderRadius = 10;
+  static const double messageTextSize = 24;
+  static const double messageTextPadding = 0;
+
   Widget _getChatWidgetImage() {
     if (chatIconWidget != null) {
       return chatIconWidget!;
     } else {
       return SizedBox(
-          width: chatIconWidgetWidth ?? 70,
-          height: chatIconWidgetHeight ?? 70,
+          width: chatIconWidgetWidth ?? defaultChatWidgetImageWidth,
+          height: chatIconWidgetHeight ?? defaultChatWidgetImageHeight,
           child: Icon(
             Icons.chat,
             color: chatIconColor ?? Colors.white,
-            size: chatIconSize ?? 35,
+            size: chatIconSize ?? defaultChatIconSize,
           ));
     }
   }
@@ -96,7 +104,7 @@ class FloatingChatIcon extends StatelessWidget {
 
   Widget _getMessageAnimatedSwitcher(BuildContext context) {
     return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 250),
+      duration: messageCrossFadeTime ?? const Duration(milliseconds: defaultMessageCrossFadeTimeMilliseconds),
       child: shouldShowMessage
           ? Padding(
               padding: EdgeInsets.fromLTRB(
@@ -104,13 +112,7 @@ class FloatingChatIcon extends StatelessWidget {
                   ((isTop) ? messageVerticalSpacing : 0),
                   0,
                   ((isTop) ? 0 : messageVerticalSpacing)),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Theme.of(context).secondaryHeaderColor,
-                  borderRadius: const BorderRadius.all(Radius.circular(10)),
-                ),
-                child: _getMessageWidget(),
-              ))
+              child: _getMessageWidget())
           : const SizedBox.shrink(),
     );
   }
@@ -126,16 +128,16 @@ class FloatingChatIcon extends StatelessWidget {
       unboundMessageWidget = Container(
         decoration: BoxDecoration(
           color: messageBackgroundColor ?? Colors.blue,
-          borderRadius: const BorderRadius.all(Radius.circular(10)),
+          borderRadius: const BorderRadius.all(Radius.circular(messageBorderRadius)),
             border: (messageBorderWidth == null) ? null : Border.all(color: messageBorderColor ?? Colors.white, width: messageBorderWidth!)
         ),
         child: Padding(
-          padding: const EdgeInsets.all(10),
+          padding: const EdgeInsets.all(messageTextPadding),
           child: messageTextWidget ??
               Text(
                 message ?? "",
                 style: messageTextStyle ??
-                    const TextStyle(fontSize: 24, color: Colors.white),
+                    const TextStyle(fontSize: messageTextSize, color: Colors.white),
               ),
         ),
       );
