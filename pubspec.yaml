@@ -1,7 +1,7 @@
 name: floating_chat_button
 description: A floating button which can be dragged around the screen and can display messages to the user
-version: 0.0.1
-homepage:
+version: 1.0.0
+repository: https://github.com/cu-apps/floating_chat_button
 
 environment:
   sdk: ">=2.15.1 <3.0.0"
