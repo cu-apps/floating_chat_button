@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'floating_chat_icon.dart';
+import 'src/floating_chat_icon.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
 
