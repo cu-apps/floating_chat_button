@@ -104,7 +104,8 @@ class FloatingChatIcon extends StatelessWidget {
 
   Widget _getMessageAnimatedSwitcher(BuildContext context) {
     return AnimatedSwitcher(
-      duration: messageCrossFadeTime ?? const Duration(milliseconds: defaultMessageCrossFadeTimeMilliseconds),
+      duration: messageCrossFadeTime ??
+          const Duration(milliseconds: defaultMessageCrossFadeTimeMilliseconds),
       child: shouldShowMessage
           ? Padding(
               padding: EdgeInsets.fromLTRB(
@@ -127,17 +128,22 @@ class FloatingChatIcon extends StatelessWidget {
     } else {
       unboundMessageWidget = Container(
         decoration: BoxDecoration(
-          color: messageBackgroundColor ?? Colors.blue,
-          borderRadius: const BorderRadius.all(Radius.circular(messageBorderRadius)),
-            border: (messageBorderWidth == null) ? null : Border.all(color: messageBorderColor ?? Colors.white, width: messageBorderWidth!)
-        ),
+            color: messageBackgroundColor ?? Colors.blue,
+            borderRadius:
+                const BorderRadius.all(Radius.circular(messageBorderRadius)),
+            border: (messageBorderWidth == null)
+                ? null
+                : Border.all(
+                    color: messageBorderColor ?? Colors.white,
+                    width: messageBorderWidth!)),
         child: Padding(
           padding: const EdgeInsets.all(messageTextPadding),
           child: messageTextWidget ??
               Text(
                 message ?? "",
                 style: messageTextStyle ??
-                    const TextStyle(fontSize: messageTextSize, color: Colors.white),
+                    const TextStyle(
+                        fontSize: messageTextSize, color: Colors.white),
               ),
         ),
       );

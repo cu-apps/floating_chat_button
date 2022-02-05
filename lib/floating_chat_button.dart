@@ -219,29 +219,30 @@ class FloatingChatButtonState extends State<FloatingChatButton> {
   Widget build(BuildContext context) {
     return LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
-          var floatingChatIcon = FloatingChatIcon(
-            onTap: widget.onTap,
-            isTop: isTop,
-            isRight: isRight,
-            message: messageText,
-            shouldShowMessage: isTimeToShowMessage,
-            shouldPutWidgetInCircle: widget.shouldPutWidgetInCircle,
-            chatIconWidget: widget.chatIconWidget,
-            chatIconColor: widget.chatIconColor,
-            chatIconBackgroundColor: widget.chatIconBackgroundColor,
-            chatIconSize: widget.chatIconSize,
-            chatIconWidgetHeight: widget.chatIconWidgetHeight,
-            chatIconWidgetWidth: widget.chatIconWidgetWidth,
-            chatIconBorderColor: widget.chatIconBorderColor,
-            chatIconBorderWidth: widget.chatIconBorderWidth,
-            messageCrossFadeTime: widget.messageCrossFadeTime,
-            messageVerticalSpacing: widget.messageVerticalSpacing,
-            messageWidget: messageWidget,
-            messageBackgroundColor: widget.messageBackgroundColor,
-            messageTextStyle: widget.messageTextStyle,
-            messageTextWidget: messageTextWidget,
-            messageMaxWidth: constraints.maxWidth - (widget.chatIconHorizontalOffset * 2),
-          );
+      var floatingChatIcon = FloatingChatIcon(
+        onTap: widget.onTap,
+        isTop: isTop,
+        isRight: isRight,
+        message: messageText,
+        shouldShowMessage: isTimeToShowMessage,
+        shouldPutWidgetInCircle: widget.shouldPutWidgetInCircle,
+        chatIconWidget: widget.chatIconWidget,
+        chatIconColor: widget.chatIconColor,
+        chatIconBackgroundColor: widget.chatIconBackgroundColor,
+        chatIconSize: widget.chatIconSize,
+        chatIconWidgetHeight: widget.chatIconWidgetHeight,
+        chatIconWidgetWidth: widget.chatIconWidgetWidth,
+        chatIconBorderColor: widget.chatIconBorderColor,
+        chatIconBorderWidth: widget.chatIconBorderWidth,
+        messageCrossFadeTime: widget.messageCrossFadeTime,
+        messageVerticalSpacing: widget.messageVerticalSpacing,
+        messageWidget: messageWidget,
+        messageBackgroundColor: widget.messageBackgroundColor,
+        messageTextStyle: widget.messageTextStyle,
+        messageTextWidget: messageTextWidget,
+        messageMaxWidth:
+            constraints.maxWidth - (widget.chatIconHorizontalOffset * 2),
+      );
       return Stack(children: [
         if (widget.background != null) widget.background!,
         Positioned(
