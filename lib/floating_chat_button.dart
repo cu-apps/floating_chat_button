@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:math';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
-
 import 'src/floating_chat_icon.dart';
 
 class FloatingChatButton extends StatefulWidget {
@@ -29,6 +29,14 @@ class FloatingChatButton extends StatefulWidget {
   final double? chatIconSize;
   final double? chatIconWidgetHeight;
   final double? chatIconWidgetWidth;
+
+  /// On drag end, animates how the [chatIconWidget] approaches corners.
+  /// If null, default value is [Curves.elasticOut].
+  final Curve chatIconAnimationCurve;
+
+  /// On drag end, specifies how long the [chatIconWidget] approaches corners.
+  /// If null, default value is 1 second.
+  final Duration? chatIconAnimationDuration;
 
   /// If shouldPutWidgetInCircle is true, this specifies the border colour around
   /// the circle
@@ -92,6 +100,8 @@ class FloatingChatButton extends StatefulWidget {
       this.chatIconWidgetWidth,
       this.chatIconBorderColor = Colors.blue,
       this.chatIconBorderWidth = 4,
+      this.chatIconAnimationCurve = Curves.elasticOut,
+      this.chatIconAnimationDuration = const Duration(seconds: 1),
       this.messageWidget,
       this.messageCrossFadeTime,
       this.messageVerticalSpacing = 10,
@@ -116,7 +126,8 @@ class FloatingChatButton extends StatefulWidget {
   FloatingChatButtonState createState() => FloatingChatButtonState();
 }
 
-class FloatingChatButtonState extends State<FloatingChatButton> {
+class FloatingChatButtonState extends State<FloatingChatButton>
+    with SingleTickerProviderStateMixin {
   Widget? messageWidget;
   Widget? messageTextWidget;
   String? messageText;
@@ -124,10 +135,38 @@ class FloatingChatButtonState extends State<FloatingChatButton> {
   bool isRight = true;
   bool isTimeToShowMessage = false;
   Timer? _timer;
+  Offset? _releaseOffset;
+
+  // Animate the chat widget movement
+  late final AnimationController _animationController;
+
+  // Tweens the chat widget animation
+  late final _tween = Tween(
+    begin: 0.0,
+    end: 1.0,
+  ).animate(
+    CurvedAnimation(
+      parent: _animationController,
+      curve: widget.chatIconAnimationCurve,
+    ),
+  );
+
+  // Needed to obtain a reference to the chat icon widget itself
+  GlobalKey chatIconKey = GlobalKey();
+
+  // The current size of the chat icon widget
+  Offset? _chatIconSize;
+
+  // The current size of the entire area used by the chat icon + message widget
+  Offset? _chatIconWithMessageSize;
+
+  // The local position of the chat icon widget itself
+  Offset? _chatIconDragStart;
 
   @override
   void dispose() {
     _timer?.cancel();
+    _animationController.dispose();
     super.dispose();
   }
 
@@ -142,12 +181,14 @@ class FloatingChatButtonState extends State<FloatingChatButton> {
       Duration? duration,
       Widget? messageWidget,
       Widget? messageTextWidget}) {
-    _setStateIfMounted(() {
-      this.messageWidget = messageWidget;
-      this.messageTextWidget = messageTextWidget;
-      this.messageText = messageText;
-      isTimeToShowMessage = true;
-    });
+    _setStateIfMounted(
+      () {
+        this.messageWidget = messageWidget;
+        this.messageTextWidget = messageTextWidget;
+        this.messageText = messageText;
+        isTimeToShowMessage = true;
+      },
+    );
     if (duration != null) {
       _scheduleMessageDisappearing(duration: duration);
     }
@@ -155,23 +196,90 @@ class FloatingChatButtonState extends State<FloatingChatButton> {
 
   /// Removes any messages which are currently showing
   void hideMessage() {
-    _setStateIfMounted(() {
-      isTimeToShowMessage = false;
-    });
+    _setStateIfMounted(
+      () {
+        isTimeToShowMessage = false;
+      },
+    );
+  }
+
+  /// This helper function determines the "cross-over" point
+  /// on the screen based on drag amount stored in [draggableDetails]
+  /// and the centroid of the widget.
+  ///
+  /// The widget centroid is calculated from its parent layouts and
+  /// and offset is applied accounting for the cross-over point so
+  /// that the widget appears to animate smoothly from its release
+  /// point to the destination corner. Without this adjustment,
+  /// the orientation of the widget as it slides to one of the
+  /// corners will be obviously mis-aligned visually and does not
+  /// appear natural.
+  void _calculateReleasePosition(
+    BuildContext layoutContext,
+    DraggableDetails draggableDetails,
+  ) {
+    final Size mqSize = MediaQuery.of(context).size;
+    final double w = mqSize.width;
+    final double h = mqSize.height;
+
+    final Offset dragOffset = draggableDetails.offset;
+
+    // Calculate the midpoint wrt the visible location of the
+    // icon chat widget, irrespective of any message widgets
+    final Offset crossOver = switch (_chatIconDragStart) {
+      final Offset start => dragOffset + start,
+      _ => dragOffset
+    };
+
+    isTop = (crossOver.dy < h * 0.5);
+    isRight = (crossOver.dx > w * 0.5);
+
+    // Total offset of all "parent" contexts halved
+    final p = _calcOffsets([context, layoutContext]).scale(0.5, 0.5);
+    _releaseOffset = dragOffset - p;
+
+    // Update adjusted drag position relative to the widget
+    final Offset r = switch ((_chatIconSize, _chatIconWithMessageSize)) {
+      (final Offset c, final Offset m) => (m - c) + c,
+      _ => Offset.zero
+    };
+
+    if (!isTop) {
+      _releaseOffset = Offset(
+        _releaseOffset!.dx,
+        (h - p.dy) - (_releaseOffset!.dy + p.dy + r.dy),
+      );
+    }
+
+    if (isRight) {
+      _releaseOffset = Offset(
+        (w - p.dx) - (_releaseOffset!.dx + p.dx + r.dx),
+        _releaseOffset!.dy,
+      );
+    }
+
+    _animationController.forward(from: 0.0);
   }
 
   void _scheduleMessageShowing() {
     if (widget.showMessageParameters?.delayDuration != null) {
-      _timer = Timer(widget.showMessageParameters!.delayDuration!, () {
-        _setStateIfMounted(() {
-          isTimeToShowMessage = true;
-        });
-        _scheduleMessageDisappearing();
-      });
+      _timer = Timer(
+        widget.showMessageParameters!.delayDuration!,
+        () {
+          _setStateIfMounted(
+            () {
+              isTimeToShowMessage = true;
+            },
+          );
+          _scheduleMessageDisappearing();
+        },
+      );
     } else {
-      _setStateIfMounted(() {
-        isTimeToShowMessage = true;
-      });
+      _setStateIfMounted(
+        () {
+          isTimeToShowMessage = true;
+        },
+      );
       _scheduleMessageDisappearing();
     }
   }
@@ -185,17 +293,26 @@ class FloatingChatButtonState extends State<FloatingChatButton> {
           widget.showMessageParameters?.durationToShowMessage;
     }
     if (durationUntilDisappers != null) {
-      _timer = Timer(durationUntilDisappers, () {
-        _setStateIfMounted(() {
-          isTimeToShowMessage = false;
-        });
-      });
+      _timer = Timer(
+        durationUntilDisappers,
+        () {
+          _setStateIfMounted(
+            () {
+              isTimeToShowMessage = false;
+            },
+          );
+        },
+      );
     }
   }
 
   @override
   void initState() {
     super.initState();
+    _animationController = AnimationController(
+      duration: widget.chatIconAnimationDuration,
+      vsync: this,
+    );
     messageWidget = widget.messageWidget;
     messageTextWidget = widget.messageTextWidget;
     messageText = widget.messageText;
@@ -215,56 +332,117 @@ class FloatingChatButtonState extends State<FloatingChatButton> {
     return isWithinMessageFrequency;
   }
 
+  /// Accumulates parent widget offsets for the [Positioned] widget
+  Offset _calcOffsets(List<BuildContext> contexts) {
+    return contexts
+        .map<Offset>(
+          (e) => switch (e.findRenderObject()) {
+            final RenderBox r => r.localToGlobal(Offset.zero),
+            _ => Offset.zero,
+          },
+        )
+        .fold<Offset>(Offset.zero, (prev, e) => prev + e);
+  }
+
+  // We need to calculate the drag offset relative to the chatIcon.
+  // This is because all calculations are w.r.t. the chatIcon resting
+  // in the 4 possible corners, irrespective of the message widget size.
+  // We use the drag stategy to obtain those widgets dimensions as they
+  // are rendered by then.
+  Offset _dragStrategy(
+      Draggable<Object> _, BuildContext context, Offset position) {
+    final RenderBox? chatIcon =
+        chatIconKey.currentContext?.findRenderObject() as RenderBox?;
+    final RenderBox? parent = context.findRenderObject() as RenderBox?;
+
+    // No work can be done
+    if (parent == null || chatIcon == null) return Offset.zero;
+
+    _chatIconSize = Offset(chatIcon.size.width, chatIcon.size.height);
+    _chatIconWithMessageSize = Offset(parent.size.width, parent.size.height);
+    _chatIconDragStart = chatIcon.globalToLocal(position);
+
+    return parent.globalToLocal(position);
+  }
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
-        builder: (BuildContext context, BoxConstraints constraints) {
-      var floatingChatIcon = FloatingChatIcon(
-        onTap: widget.onTap,
-        isTop: isTop,
-        isRight: isRight,
-        message: messageText,
-        shouldShowMessage: isTimeToShowMessage,
-        shouldPutWidgetInCircle: widget.shouldPutWidgetInCircle,
-        chatIconWidget: widget.chatIconWidget,
-        chatIconColor: widget.chatIconColor,
-        chatIconBackgroundColor: widget.chatIconBackgroundColor,
-        chatIconSize: widget.chatIconSize,
-        chatIconWidgetHeight: widget.chatIconWidgetHeight,
-        chatIconWidgetWidth: widget.chatIconWidgetWidth,
-        chatIconBorderColor: widget.chatIconBorderColor,
-        chatIconBorderWidth: widget.chatIconBorderWidth,
-        messageCrossFadeTime: widget.messageCrossFadeTime,
-        messageVerticalSpacing: widget.messageVerticalSpacing,
-        messageWidget: messageWidget,
-        messageBackgroundColor: widget.messageBackgroundColor,
-        messageTextStyle: widget.messageTextStyle,
-        messageTextWidget: messageTextWidget,
-        messageMaxWidth:
-            constraints.maxWidth - (widget.chatIconHorizontalOffset * 2),
-      );
-      return Stack(children: [
-        if (widget.background != null) widget.background!,
-        Positioned(
-            bottom: (isTop) ? null : widget.chatIconVerticalOffset,
-            top: (isTop) ? widget.chatIconVerticalOffset : null,
-            right: (isRight) ? widget.chatIconHorizontalOffset : null,
-            left: (isRight) ? null : widget.chatIconHorizontalOffset,
-            child: Draggable(
-              feedback: floatingChatIcon,
-              childWhenDragging: Container(),
-              onDragEnd: (draggableDetails) {
-                _setStateIfMounted(() {
-                  isTop = (draggableDetails.offset.dy <
-                      (MediaQuery.of(context).size.height) / 2);
-                  isRight = (draggableDetails.offset.dx >
-                      (MediaQuery.of(context).size.width) / 2);
-                });
+      builder: (BuildContext layoutContext, BoxConstraints constraints) {
+        final FloatingChatIcon floatingChatIcon = FloatingChatIcon(
+          onTap: widget.onTap,
+          isTop: isTop,
+          isRight: isRight,
+          message: messageText,
+          shouldShowMessage: isTimeToShowMessage,
+          shouldPutWidgetInCircle: widget.shouldPutWidgetInCircle,
+          chatIconWidget: widget.chatIconWidget,
+          chatIconColor: widget.chatIconColor,
+          chatIconBackgroundColor: widget.chatIconBackgroundColor,
+          chatIconSize: widget.chatIconSize,
+          chatIconWidgetHeight: widget.chatIconWidgetHeight,
+          chatIconWidgetWidth: widget.chatIconWidgetWidth,
+          chatIconBorderColor: widget.chatIconBorderColor,
+          chatIconBorderWidth: widget.chatIconBorderWidth,
+          messageCrossFadeTime: widget.messageCrossFadeTime,
+          messageVerticalSpacing: widget.messageVerticalSpacing,
+          messageWidget: messageWidget,
+          messageBackgroundColor: widget.messageBackgroundColor,
+          messageTextStyle: widget.messageTextStyle,
+          messageTextWidget: messageTextWidget,
+          messageMaxWidth:
+              constraints.maxWidth - (widget.chatIconHorizontalOffset * 2),
+        );
+
+        return Stack(
+          children: [
+            if (widget.background != null) widget.background!,
+            AnimatedBuilder(
+              animation: _animationController,
+              child: Draggable(
+                key: chatIconKey,
+                feedback: floatingChatIcon,
+                childWhenDragging: Container(),
+                dragAnchorStrategy: _dragStrategy,
+                onDragStarted: () {
+                  _animationController.stop();
+                },
+                onDragEnd: (draggableDetails) {
+                  _setStateIfMounted(
+                    () => _calculateReleasePosition(
+                      layoutContext,
+                      draggableDetails,
+                    ),
+                  );
+                },
+                child: floatingChatIcon,
+              ),
+              builder: (BuildContext context, Widget? child) {
+                if (child == null) return const SizedBox.shrink();
+                final double dt =
+                    _animationController.isAnimating ? _tween.value : 1.0;
+                final Offset w = Offset(
+                  widget.chatIconHorizontalOffset,
+                  widget.chatIconVerticalOffset,
+                );
+                final Offset s = switch (_releaseOffset) {
+                  null => w,
+                  Offset r => Offset(lerpDouble(r.dx, w.dx, dt) ?? w.dx,
+                      lerpDouble(r.dy, w.dy, dt) ?? w.dy),
+                };
+                return Positioned(
+                  bottom: (isTop) ? null : s.dy,
+                  top: (isTop) ? s.dy : null,
+                  right: (isRight) ? s.dx : null,
+                  left: (isRight) ? null : s.dx,
+                  child: child,
+                );
               },
-              child: floatingChatIcon,
-            ))
-      ]);
-    });
+            ),
+          ],
+        );
+      },
+    );
     // return
   }
 }

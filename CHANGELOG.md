@@ -1,3 +1,7 @@
+## 1.1.1
+- Sleek, responsive, wiggle-on-release animation behavior added.
+  - Thanks to [TheMaverickProgrammer](https://github.com/TheMaverickProgrammer) for their work in improving the animation behaviour.
+
 ## 1.1.0
 
 - Update dependencies.

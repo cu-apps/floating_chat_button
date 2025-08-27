@@ -165,7 +165,7 @@ class FloatingChatIcon extends StatelessWidget {
           (isRight ? CrossAxisAlignment.end : CrossAxisAlignment.start),
       children: [
         if (!isTop) _getMessageAnimatedSwitcher(context),
-        _getChatCircleWidget(context),
+        Container(child: _getChatCircleWidget(context)),
         if (isTop) _getMessageAnimatedSwitcher(context),
       ],
     );
